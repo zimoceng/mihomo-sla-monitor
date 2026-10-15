@@ -1,66 +1,67 @@
 # Mihomo SLA Monitor
 
-面向自用节点的可用性、延迟、故障事件与监控覆盖率控制台。
+一个自用的 Mihomo 节点监控面板。
 
-前端采用 Vue 3 + Vite，后端采用 FastAPI + SQLite。独立 Mihomo 监控实例负责逐节点探测；现有主代理负责订阅下载和可选 Telegram 通知。管理界面默认仅通过本机或 SSH 隧道访问。
+定时检查订阅里的节点，把成功率、延迟和故障记录保存在 SQLite 中。网页上可以看历史趋势、对比节点，也可以把故障和恢复通知发到 Telegram。
 
-## 源码与安装
+## 功能
 
-完整源码直接放在本仓库的 `main` 分支：
+- 导入 HTTPS Mihomo YAML 订阅，更新监控节点。
+- 查看成功率、平均延迟和 P50 / P95 / P99，最多同时对比 3 个节点。
+- 连续失败 3 次记为故障，连续成功 2 次记为恢复。
+- 查看监控覆盖率，区分正常、故障和没有足够数据的时段。
+- 在网页修改探测地址、间隔和超时，下一轮生效。
+- 通过 Telegram 接收新故障和恢复通知。
 
-- [backend/](backend/)：FastAPI 后端、SQLite 采集与 Telegram 告警进程。
-- [frontend/](frontend/)：Vue 3 页面和 Vite 构建配置。
-- [deploy/](deploy/)：systemd 与 Nginx 部署模板。
+这里的可用率来自定时探测，不是合同 SLA。采集器停机或数据缺失时，状态记为未知。
 
-**第一次安装请从 [Ubuntu 24.04 完整部署说明](docs/DEPLOYMENT.md) 第 1 步开始。** 文档依次介绍下载源码、安装依赖、配置代理、启动后端、构建前端和通过 SSH 隧道访问。需要自备 Ubuntu 服务器、Mihomo 内核和自己的节点/订阅；Telegram 告警为可选功能。
+## 安装
 
-只想下载源码或二次开发，可以在电脑或服务器终端执行：
+服务部署在 Ubuntu 24.04 上，需要 Python 3.12、Node.js 22.12+ 和 Mihomo。具体步骤见 [安装文档](docs/DEPLOYMENT.md)。
+
+仓库里有后端、前端和部署配置。下载源码：
 
 ```bash
 git clone https://github.com/zimoceng/mihomo-sla-monitor.git
 cd mihomo-sla-monitor
 ```
 
-也可以在仓库页面点击 **Code → Download ZIP** 获取源码。后续开发命令在项目根目录执行；作为服务器长期运行时，请使用部署说明中的 `/opt/mihomo-sla` 路径和服务配置。
+也可以用仓库页面的 **Code → Download ZIP** 下载。安装文档中的服务目录是 `/opt/mihomo-sla`，按文档部署时使用那个路径。
 
-## 功能
+节点和订阅需要自己填写。示例中的 DIRECT 节点只用于检查配置，采集器会跳过它。Telegram 告警按需开启。
 
-- 通过后端导入 HTTPS Mihomo YAML 订阅，原子保存节点并刷新 Provider。
-- 自动采集探测成功率、平均延迟及 P50/P95/P99，按探测目标区分统计。
-- 连续 3 次失败确认故障，连续 2 次成功确认恢复；监控间断记为未知。
-- 展示监控覆盖率、已观测时间可用性及未知时间。
-- 网页调整探测目标、间隔和超时；下一轮生效。
-- 独立 Telegram 告警进程：首次建立历史基线，发送失败重试，成功后去重。
+面板没有登录功能，默认只监听本机地址，通过 SSH 隧道访问。相关限制见 [安全说明](SECURITY.md)。
 
-采样成功率和已观测时间可用性均不等于合同 SLA，监控缺口不能当成正常或故障。
+## 运行方式
 
-## 架构
+项目使用两个 Mihomo 实例：
 
-```text
-浏览器 --SSH 隧道--> Nginx 127.0.0.1:8080
-                         |-- 前端静态文件
-                         '-- /api --> FastAPI 127.0.0.1:8000
-                                        |-- SQLite
-                                        |-- 监控 Mihomo 127.0.0.1:19091
-                                        '-- 主代理 127.0.0.1:7890 --> 订阅源
+| 服务 | 默认地址 | 用途 |
+| --- | --- | --- |
+| 主代理 | 127.0.0.1:7890 | 下载订阅、发送 Telegram 消息 |
+| 监控实例 | 127.0.0.1:19091 | 逐个节点发起探测 |
+| FastAPI | 127.0.0.1:8000 | 采集、查询和设置 |
+| Nginx | 127.0.0.1:8080 | 提供网页并转发 API 请求 |
 
-Telegram worker --只读查询故障--> SQLite
-                --经主代理发送--> Telegram
-```
+主代理已有的话可以直接复用。监控实例单独运行，不开启 TUN。后端用 FastAPI，前端用 Vue 3 + Vite，数据保存在本机 SQLite 中。
 
-## 部署
+## 源码目录
 
-详细步骤见 [Ubuntu 部署说明](docs/DEPLOYMENT.md)。
+| 目录 | 内容 |
+| --- | --- |
+| [backend/](backend/) | 采集、统计、故障判断和 Telegram 通知 |
+| [frontend/](frontend/) | 网页源码 |
+| [monitor/](monitor/) | 监控实例的示例配置 |
+| [main/](main/) | 主代理的示例配置 |
+| [deploy/](deploy/) | systemd、Nginx 和环境变量示例 |
+| [docs/](docs/) | 安装和维护说明 |
+| [tests/](tests/) | 离线测试 |
 
-环境：Ubuntu 24.04、Python 3.12、兼容当前 Mihomo Provider API 的独立内核，以及 Node.js 22.12+（测试使用 Node 24）。Vite 的运行版本要求见[官方文档](https://vite.dev/guide/)。
+## 本地开发
 
-本仓库不附带 Mihomo 内核、真实节点或可用订阅。请从 [Mihomo 官方发行页](https://github.com/MetaCubeX/mihomo/releases)单独安装并记录实际版本；按部署说明执行配置检查。示例 DIRECT 节点用于启动和配置校验，采集器会跳过它。
+先克隆源码。下面的命令都从项目根目录开始执行。
 
-已有生产实例请先在新环境验证模板，不要直接覆盖当前配置。
-
-## 本地开发（Linux）
-
-先按上面的克隆命令取得源码，并进入项目根目录。以下三个服务分别在独立终端启动；每个终端都先进入同一个项目根目录。
+准备后端和配置文件：
 
 ```bash
 python3 -m venv backend/.venv
@@ -68,46 +69,48 @@ backend/.venv/bin/pip install -r backend/requirements.lock.txt
 cp .env.example .env
 cp monitor/config.example.yaml monitor/config.yaml
 cp monitor/nodes.example.yaml monitor/nodes.yaml
-# 终端 1：需要已安装 Mihomo
+```
+
+然后分别打开三个终端，每个终端都先进入项目根目录。
+
+监控实例：
+
+```bash
 mihomo -d "$PWD/monitor"
-# 终端 2：在项目根目录加载本地环境，再启动后端
+```
+
+后端：
+
+```bash
 set -a; . ./.env; set +a
 (cd backend && .venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1 --no-access-log)
-# 终端 3
+```
+
+前端：
+
+```bash
 cd frontend
 npm ci
 npm run dev
 ```
 
-Python 不会自动读取 `.env`。默认订阅下载代理是 `127.0.0.1:7890`；需要直连时将 `SLA_DOWNLOAD_PROXY` 设为空。主代理配置和凭据由使用者自行提供。
+开发页面地址是 `http://127.0.0.1:5173`。Python 不会自动加载 `.env`，所以上面的后端命令先把它读入环境变量。
 
-## 项目结构
+订阅默认通过 `127.0.0.1:7890` 下载。需要直连时，将 `SLA_DOWNLOAD_PROXY` 留空。
 
-| 目录 | 内容 |
-| --- | --- |
-| backend/ | 采集、分析、事件、覆盖率、设置及 Telegram 进程 |
-| frontend/ | 控制台源码和前端依赖锁定文件 |
-| monitor/ | 独立监控实例示例 |
-| main/ | 可选主代理示例，供全新环境使用 |
-| deploy/ | systemd、Nginx 和 Telegram 环境变量示例 |
-| docs/ | 部署、安全发布和第三方说明 |
-| tests/ | 使用临时数据和模拟请求的基础检查 |
+## 测试
 
-源码保留原有 Day 1–Day 3.2 模块命名，便于对应已有实现。
-
-## 检查
+在项目根目录执行：
 
 ```bash
-python -m compileall -q backend tests tools
-python -m unittest discover -s tests -v
-python tools/check_public_tree.py
+backend/.venv/bin/python -m compileall -q backend tests tools
+backend/.venv/bin/python -m unittest discover -s tests -v
+backend/.venv/bin/python tools/check_public_tree.py
 cd frontend && npm ci && npm run build
 ```
 
-测试不使用真实订阅、节点、生产数据库或 Telegram Token，也不发送告警。GitHub Actions 提供相同的基础检查；远端运行结果应在首次发布后确认。
+测试使用临时数据库和模拟请求，不会读取真实订阅或发送 Telegram 消息。GitHub Actions 会检查后端测试和前端构建。
 
-## 安全与许可证
+## 许可证
 
-此版本没有内置登录鉴权，只适合可信管理员使用。保持管理端口绑定环回地址；通过隧道访问。详见 [SECURITY.md](SECURITY.md)。
-
-原创项目代码按 [MIT](LICENSE) 发布。独立安装的 Mihomo 及其他依赖保留各自许可证；详见[第三方说明](docs/THIRD_PARTY.md)。
+项目代码采用 [MIT](LICENSE) 许可证。Mihomo 和其他依赖按各自的许可证使用，详见 [第三方软件](docs/THIRD_PARTY.md)。

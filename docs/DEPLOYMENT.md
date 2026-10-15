@@ -1,12 +1,14 @@
 # Ubuntu 24.04 部署
 
-以下步骤面向全新机器或隔离验证环境。源码位于 `/opt/mihomo-sla`；数据库和生产配置存放在 `/var/lib`、`/etc`，不进入仓库。
+下面按一台新的 Ubuntu 24.04 机器来安装。源码放在 `/opt/mihomo-sla`，配置和运行数据放在 `/etc`、`/var/lib`。已有服务请先核对目录和端口。
 
-## 1. 准备依赖和源码
+## 1. 安装依赖，下载源码
 
-安装 Python 3.12、venv、Nginx、Git，以及 Node.js 22.12+。Node.js 安装方式见[官方发布页](https://nodejs.org/en/download)。Mihomo 内核从[官方发行页](https://github.com/MetaCubeX/mihomo/releases)单独获取，核对该发行版校验值、放到 `/usr/local/bin/mihomo` 并赋予执行权限。
+需要 Python 3.12、venv、Nginx、Git 和 Node.js 22.12+。Node.js 按[官方说明](https://nodejs.org/en/download)安装。
 
-记录 `python3 --version`、`node --version` 和 `mihomo -v`；不要直接运行来历不明的安装脚本。
+Mihomo 从[官方发行页](https://github.com/MetaCubeX/mihomo/releases)下载，核对校验值后放到 `/usr/local/bin/mihomo`，并加上执行权限。
+
+安装后用 `python3 --version`、`node --version` 和 `mihomo -v` 看一下版本，排查问题时会用到。
 
 ```bash
 sudo apt update
@@ -21,13 +23,13 @@ sudo chown -R root:root /opt/mihomo-sla
 sudo chmod -R a+rX /opt/mihomo-sla
 ```
 
-如果已在上述目录下载了本仓库，跳过 `git clone` 并从 `cd /opt/mihomo-sla` 继续；这些步骤不用于覆盖正在运行的生产项目。
+已经下载到这个目录的话，从 `cd /opt/mihomo-sla` 继续。不要用这组命令覆盖正在运行的项目。
 
-依赖锁文件来自原有 Python 3.12 部署；前端使用已有 `package-lock.json`。需要更新依赖时应重新测试后再更新锁文件，不应随部署自动升级。
+后端按 `requirements.lock.txt` 安装，前端按 `package-lock.json` 安装。更新依赖后先跑测试，再提交新的锁文件。
 
-## 2. 主代理与独立监控实例
+## 2. 配置 Mihomo
 
-已有主 Mihomo 在 `127.0.0.1:7890` 可用时直接复用它。不要替换已有的 AnyTLS/Shadowsocks 配置。
+如果已有 Mihomo 在 `127.0.0.1:7890` 提供代理，可以直接复用，原有节点配置不用改。下面单独配置监控实例。
 
 ```bash
 cd /opt/mihomo-sla
@@ -37,13 +39,15 @@ sudo install -o mihomo-sla -g mihomo-sla -m 0600 monitor/nodes.example.yaml /var
 sudo -u mihomo-sla /usr/local/bin/mihomo -t -d /var/lib/mihomo-sla-monitor
 ```
 
-示例不含真实节点。监控端口为 `127.0.0.1:19091`，没有代理入站且 TUN 关闭；Provider 名称必须保持 `all-nodes`。API 对文件型 Provider 的刷新行为依赖所安装内核，首次部署需用自己的订阅验证刷新成功和节点列表。
+监控实例的控制端口是 `127.0.0.1:19091`，不提供代理入站，也不开 TUN。Provider 名称要保留为 `all-nodes`，后端会用这个名称刷新节点。
 
-如需设置监控 API 的 `secret`，只编辑本机生产配置，并在下一步的 `MIHOMO_SECRET` 中填写一致的值。空密钥示例仅配合环回绑定使用。
+装好后需要导入自己的订阅，确认当前内核能刷新文件型 Provider，网页能读到节点。
 
-### 可选：全新机器的主代理
+需要给监控 API 设置 `secret` 时，在服务器上修改配置，并把相同的值填进后端的 `MIHOMO_SECRET`。示例里的密钥为空，控制端口只绑定本机地址。
 
-仅在没有已有主代理时执行本节。两个实例的目录、代理端口和控制端口互不冲突。
+### 没有主代理时
+
+没有现成主代理的话，可以按下面的示例另起一个实例。它和监控实例使用不同的目录与端口。
 
 ```bash
 sudo useradd --system --home /var/lib/mihomo-sla-main --shell /usr/sbin/nologin mihomo-main
@@ -58,9 +62,9 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now mihomo-sla-main
 ```
 
-主代理 `mixed-port` 为 `127.0.0.1:7890`，控制 API 为 `127.0.0.1:19090`。示例 DIRECT 节点不是可用的境外代理，必须替换为自己的节点。
+主代理监听 `127.0.0.1:7890`，控制 API 是 `127.0.0.1:19090`。把示例里的 DIRECT 换成自己的有效节点；保留 DIRECT 只能检查配置，不能代替实际代理。
 
-## 3. 后端和探测设置
+## 3. 启动后端
 
 ```bash
 sudo install -d -m 0750 -o root -g mihomo-sla /etc/mihomo-sla
@@ -72,7 +76,7 @@ sudo systemctl enable --now mihomo-sla-monitor mihomo-sla-backend
 curl --fail http://127.0.0.1:8000/api/health
 ```
 
-systemd 以非 root 用户运行。后端单进程采集，不能启动多个 Uvicorn worker，否则会重复采样。目录由 StateDirectory 创建，运行时路径如下：
+服务使用 `mihomo-sla` 用户运行。后端只开一个 Uvicorn worker，多个 worker 会重复采样。systemd 会创建数据目录：
 
 | 文件 | 作用 |
 | --- | --- |
@@ -81,13 +85,13 @@ systemd 以非 root 用户运行。后端单进程采集，不能启动多个 Uv
 | /var/lib/mihomo-sla-monitor/nodes.yaml | 导入后的私有节点 |
 | /etc/mihomo-sla/backend.env | 后端环境变量 |
 
-`.env.example` 中路径变量默认被注释，systemd 单元提供部署路径。配置文件里手动取消注释的值会覆盖单元默认值。Python 本身不加载 `.env`。
+服务的路径由 systemd 单元设置，`.env.example` 中对应的变量默认注释掉了。手动填写这些变量后，会覆盖单元里的默认路径。Python 不会自动读取 `.env`，这里由 systemd 加载环境文件。
 
-初始探测参数为 60 秒、5000 毫秒超时、5 并发。网页保存后，设置文件优先于环境变量中的探测目标、间隔和超时；下一轮采集生效。新部署无需复制生产 JSON 或数据库。
+默认每 60 秒检测一次，超时 5000 毫秒，并发数为 5。在网页保存探测设置后，目标、间隔和超时会优先使用设置文件里的值，下一轮生效。新安装会自己建库，不需要复制旧数据库或 JSON。
 
-## 4. 构建前端并配置 Nginx
+## 4. 构建前端，配置 Nginx
 
-在可写的构建工作区执行前端构建，再只复制静态产物。生产源码可以由 root 持有，应用用户无需写入它。
+下面在安装目录里构建前端，再把生成的文件复制到 Nginx 目录。也可以在自己的构建目录运行 npm，构建后只复制 `dist`。
 
 ```bash
 cd /opt/mihomo-sla/frontend
@@ -103,19 +107,19 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-Nginx 模板只监听 `127.0.0.1:8080`，不会将后台直接暴露到局域网或公网。浏览器访问前，在自己的电脑创建隧道（替换主机、端口和用户名）：
+Nginx 只监听 `127.0.0.1:8080`。在自己的电脑建立 SSH 隧道，把下面的主机、端口和用户名换成自己的：
 
 ```powershell
 ssh -p YOUR_SSH_PORT -L 8080:127.0.0.1:8080 USER@YOUR_SERVER
 ```
 
-访问 `http://127.0.0.1:8080`，在页面中导入自己的 HTTPS Mihomo YAML 订阅。成功后查询节点列表，再等待采集产生数据。订阅 URL 只在本次请求中使用；持久化的是私有节点文件。
+打开 `http://127.0.0.1:8080`，导入自己的 HTTPS Mihomo YAML 订阅，查询节点列表后等一轮采集。订阅地址只用于这次下载，节点会保存到服务器的私有文件中。
 
-首次启动只有示例 DIRECT 节点时，采集器显示尚无真实节点是预期状态。不要把导入订阅成功与代理实际可用混为一谈。
+只有示例 DIRECT 节点时，采集器会提示没有可监控的节点。导入后还要看实际探测结果，确认节点可用。
 
-## 5. 可选 Telegram 通知
+## 5. Telegram 通知（可选）
 
-先通过 BotFather 创建或轮换自己的 Bot Token，并确定目标 Chat ID。真实值只写入服务器环境文件，不能粘贴到 issue、截图或提交中。
+先在 BotFather 创建机器人，准备好 Token 和 Chat ID，然后写进服务器上的环境文件。
 
 ```bash
 cd /opt/mihomo-sla
@@ -126,11 +130,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now mihomo-sla-telegram
 ```
 
-填入 `SLA_TG_BOT_TOKEN` 和 `SLA_TG_CHAT_ID`。通过 `SLA_TG_PROXY` 使用主代理；空值或 `direct` 表示直连。不要启动模板中的空凭据服务来测试真实消息。
+填好 `SLA_TG_BOT_TOKEN` 和 `SLA_TG_CHAT_ID` 再启动通知服务。`SLA_TG_PROXY` 默认使用主代理，留空或填 `direct` 可以直连。
 
-worker 首次记录当前最大事件编号作为基线，不补发旧事件；收到 Telegram 成功响应后才记录已发送状态。网络恢复后会重试；若消息已送达但本地状态写入前进程崩溃，仍可能重复投递。删除状态数据库会重新建立基线。
+通知进程第一次启动时会从当前事件开始，不补发旧记录。发送成功后才标记为已发送，网络失败会重试。如果消息已送达，但进程在写入状态前退出，可能会重复发送。删除状态数据库后会重新建立起点。
 
-## 6. 检查与故障定位
+## 6. 排查问题
 
 ```bash
 systemctl status mihomo-sla-monitor mihomo-sla-backend
@@ -139,10 +143,12 @@ curl --fail http://127.0.0.1:8000/api/incidents/health
 journalctl -u mihomo-sla-backend -n 50 --no-pager
 ```
 
-- 后端无法启动：检查 venv、环境变量、数据目录权限和监控服务。
-- 订阅下载失败：检查主代理、订阅 HTTPS 连通性，以及该订阅是否返回 Mihomo YAML。禁用 HTTP 重定向，不支持直接导入 Base64 URI 列表。
-- 已保存但刷新失败：核对内核版本、监控实例端口、`MIHOMO_SECRET` 与 Provider 名称。节点文件必须可由后端写入并由监控实例读取。
-- 修改环境变量后需要重启对应服务；网页探测设置下一轮生效。
-- Telegram 不发旧事件属于预期行为；新事件故障需检查 worker 状态和本机环境文件。日志和截图也可能包含节点名称、探测地址，分享前需脱敏。
+- 后端启动失败：先看日志，再检查虚拟环境、环境变量、数据目录权限和监控服务。
+- 订阅下载失败：检查主代理是否可用，地址能否通过 HTTPS 访问，返回的是否为 Mihomo YAML。订阅导入禁用了重定向，也不支持 Base64 URI 列表。
+- 节点已保存但刷新失败：检查 Mihomo 版本、监控端口、`MIHOMO_SECRET` 和 `all-nodes` Provider。后端要能写入节点文件，监控实例要能读取它。
+- 改了环境变量后重启对应服务；在网页改探测设置则等下一轮生效。
+- Telegram 不发旧事件是正常行为。新事件也没通知时，检查通知服务和环境文件。分享日志或截图前，先去掉节点信息、地址和凭据。
 
-这些模板是在源码行为基础上新建的部署方案，不是现有服务器 systemd/Nginx 配置的备份。当前整理在 Windows 本地完成；Linux 服务启停、内核 Provider 刷新和真实 Telegram 投递仍需在隔离 Ubuntu 环境验收。不要在运行中的生产 NAS 上直接套用。
+部署模板还需要在目标机器上检查。现有测试没有覆盖 systemd 启停、真实订阅刷新和 Telegram 投递，这几项建议先在单独的 Ubuntu 环境试一遍。
+
+其他使用限制见 [安全说明](../SECURITY.md)。
