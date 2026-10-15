@@ -10,8 +10,9 @@
 
 ```bash
 sudo apt update
-sudo apt install -y python3-venv python3-pip nginx git
-# 将本仓库源码复制或克隆到 /opt/mihomo-sla
+sudo apt install -y python3-venv python3-pip nginx git curl
+# 首次安装时，/opt/mihomo-sla 应是尚不存在的新目录
+sudo git clone --branch main https://github.com/zimoceng/mihomo-sla-monitor.git /opt/mihomo-sla
 cd /opt/mihomo-sla
 sudo useradd --system --home /var/lib/mihomo-sla --shell /usr/sbin/nologin mihomo-sla
 sudo python3 -m venv backend/.venv
@@ -19,6 +20,8 @@ sudo backend/.venv/bin/pip install -r backend/requirements.lock.txt
 sudo chown -R root:root /opt/mihomo-sla
 sudo chmod -R a+rX /opt/mihomo-sla
 ```
+
+如果已在上述目录下载了本仓库，跳过 `git clone` 并从 `cd /opt/mihomo-sla` 继续；这些步骤不用于覆盖正在运行的生产项目。
 
 依赖锁文件来自原有 Python 3.12 部署；前端使用已有 `package-lock.json`。需要更新依赖时应重新测试后再更新锁文件，不应随部署自动升级。
 

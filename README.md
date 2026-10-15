@@ -4,6 +4,25 @@
 
 前端采用 Vue 3 + Vite，后端采用 FastAPI + SQLite。独立 Mihomo 监控实例负责逐节点探测；现有主代理负责订阅下载和可选 Telegram 通知。管理界面默认仅通过本机或 SSH 隧道访问。
 
+## 源码与安装
+
+完整源码直接放在本仓库的 `main` 分支：
+
+- [backend/](backend/)：FastAPI 后端、SQLite 采集与 Telegram 告警进程。
+- [frontend/](frontend/)：Vue 3 页面和 Vite 构建配置。
+- [deploy/](deploy/)：systemd 与 Nginx 部署模板。
+
+**第一次安装请从 [Ubuntu 24.04 完整部署说明](docs/DEPLOYMENT.md) 第 1 步开始。** 文档依次介绍下载源码、安装依赖、配置代理、启动后端、构建前端和通过 SSH 隧道访问。需要自备 Ubuntu 服务器、Mihomo 内核和自己的节点/订阅；Telegram 告警为可选功能。
+
+只想下载源码或二次开发，可以在电脑或服务器终端执行：
+
+```bash
+git clone https://github.com/zimoceng/mihomo-sla-monitor.git
+cd mihomo-sla-monitor
+```
+
+也可以在仓库页面点击 **Code → Download ZIP** 获取源码。后续开发命令在项目根目录执行；作为服务器长期运行时，请使用部署说明中的 `/opt/mihomo-sla` 路径和服务配置。
+
 ## 功能
 
 - 通过后端导入 HTTPS Mihomo YAML 订阅，原子保存节点并刷新 Provider。
@@ -40,6 +59,8 @@ Telegram worker --只读查询故障--> SQLite
 已有生产实例请先在新环境验证模板，不要直接覆盖当前配置。
 
 ## 本地开发（Linux）
+
+先按上面的克隆命令取得源码，并进入项目根目录。以下三个服务分别在独立终端启动；每个终端都先进入同一个项目根目录。
 
 ```bash
 python3 -m venv backend/.venv
