@@ -1,0 +1,5 @@
+# Placeholder only. DIRECT is skipped by the collector.
+# Import your own Mihomo YAML subscription after starting the services.
+proxies:
+  - name: EXAMPLE-DIRECT
+    type: direct

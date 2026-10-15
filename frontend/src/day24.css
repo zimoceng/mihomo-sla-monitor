@@ -1,0 +1,19 @@
+.day24-page{max-width:1160px;margin:0 auto;padding:0 24px 58px;color:#e9effa;font-family:Inter,system-ui,'Microsoft YaHei',sans-serif}
+.day24-panel{border:1px solid #354863;border-radius:15px;background:#182234;padding:26px;box-shadow:0 15px 50px #050b1720}
+.day24-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.day24-header h2{font-size:25px;margin:8px 0 6px;color:#f3f7ff}.day24-header p{color:#9bafc9;font-size:13px;margin:0}
+.day24-eyebrow{color:#72b8ff;font-size:12px;font-weight:700;letter-spacing:1.6px}
+.day24-saved{border:1px solid #3c5779;border-radius:50px;padding:8px 12px;background:#111c2d;color:#a9c9ee;font-size:12px}
+.day24-dirty{color:#f7c98c;border-color:#8b6743}
+.day24-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:24px 0 18px}
+.day24-field{font-size:13px;color:#b5cbe3;display:flex;flex-direction:column;gap:8px;min-width:0}
+.day24-field small{color:#8ca6c4;font-size:11px}
+.day24-field input,.day24-field select{width:100%;border:1px solid #45607f;border-radius:9px;background:#0f192b;color:#f1f5ff;padding:11px 12px;font:inherit;outline-offset:3px;box-sizing:border-box}
+.day24-field input:disabled,.day24-field select:disabled{opacity:.6}.day24-full{grid-column:1/-1}
+.day24-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.day24-actions button{border-radius:9px;padding:10px 16px;font:inherit;cursor:pointer}
+.day24-save{border:1px solid #5b8fdb;background:#347bdb;color:#fff}.day24-reload{border:1px solid #45607f;background:#26364d;color:#e6f0ff}
+.day24-actions button:disabled{opacity:.55;cursor:default}.day24-meta{margin-left:auto;color:#99aec7;font-size:12px}
+.day24-success,.day24-error{margin:15px 0 0;font-size:13px;padding:11px;border-radius:8px}.day24-success{background:#143b35;color:#87e5c2}.day24-error{background:#421c2a;color:#ffb7c2}
+.day24-note{margin:20px 0 0;color:#90a7c0;font-size:12px;line-height:1.75}
+@media(max-width:720px){.day24-page{padding:0 13px 32px}.day24-panel{padding:17px}.day24-header h2{font-size:22px}.day24-form{grid-template-columns:1fr}.day24-meta{margin-left:0}}

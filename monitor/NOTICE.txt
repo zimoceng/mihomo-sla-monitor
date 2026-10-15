@@ -1,0 +1,3 @@
+Production nodes.yaml and config.yaml are private runtime files.
+The example DIRECT node is a placeholder, not a monitored proxy.
+Never commit subscription URLs, node credentials or production configuration.

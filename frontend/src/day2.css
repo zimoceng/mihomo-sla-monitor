@@ -1,0 +1,28 @@
+.day2-page{max-width:1160px;margin:0 auto;padding:0 24px 52px;color:#e9effa;font-family:Inter,system-ui,'Microsoft YaHei',sans-serif}
+.day2-panel{background:#182234;border:1px solid #354863;border-radius:15px;padding:26px;box-shadow:0 15px 50px #050b1720}
+.day2-topline,.day2-subhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.day2-topline h2{font-size:25px;margin:8px 0 6px}.day2-topline p,.day2-subhead p{color:#9bafc9;font-size:13px;margin:0}
+.day2-eyebrow{color:#72b8ff;font-size:12px;font-weight:700;letter-spacing:1.6px}
+.day2-status{border:1px solid #3c5779;border-radius:50px;padding:8px 12px;background:#111c2d;color:#aad3ff;font-size:12px;white-space:nowrap}
+.day2-controls{display:flex;align-items:end;gap:12px;margin:25px 0 10px;flex-wrap:wrap}
+.day2-controls label{font-size:12px;color:#9ab0cb;display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px}
+.day2-controls select,.day2-search select,.day2-search input{background:#0f192b;color:#f1f5ff;border:1px solid #45607f;border-radius:9px;padding:11px 12px;font:inherit;min-width:0;width:100%;outline-offset:3px}
+.day2-refresh{border:1px solid #5b8fdb;border-radius:9px;background:#347bdb;color:#fff;padding:11px 18px;font:inherit;cursor:pointer}
+.day2-refresh:disabled{opacity:.6;cursor:wait}.day2-target{font-size:12px;color:#a9d4f5;overflow-wrap:anywhere;margin:10px 0 16px}.day2-target span{color:#8fa4c0}
+.day2-alert{background:#421c2a;border:1px solid #9c4f65;color:#ffb7c2;border-radius:9px;padding:10px 13px;font-size:13px}
+.day2-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.day2-kpi{padding:17px;background:#111a2a;border:1px solid #2d425d;border-radius:12px;display:flex;flex-direction:column;gap:5px}
+.day2-kpi>span{color:#a4bad3;font-size:12px}.day2-kpi strong{font-size:26px;color:#d5edff;font-variant-numeric:tabular-nums}.day2-kpi small{font-size:11px;color:#8fa8c5}
+.day2-subhead{margin:28px 0 15px}.day2-subhead h3{font-size:18px;margin:0 0 6px}.day2-search{display:flex;gap:8px;flex-wrap:wrap}.day2-search>*{min-width:160px;flex:1}
+.day2-table-wrap{overflow-x:auto;border:1px solid #30415a;border-radius:10px}.day2-table{border-collapse:collapse;width:100%;text-align:left;white-space:nowrap}
+.day2-table th,.day2-table td{padding:12px 10px;border-bottom:1px solid #2c3e57;font-size:13px}.day2-table th{font-size:11px;color:#a3bdda;background:#121e30;font-weight:700}
+.day2-table td strong{display:block;font-weight:600}.day2-table td small{display:block;color:#87a2bf;margin-top:4px}.day2-table tbody tr:last-child td{border-bottom:0}
+.day2-row-selected{background:#1b36507a}.day2-table input[type=checkbox]{accent-color:#68a7ef;width:16px;height:16px;cursor:pointer}
+.day2-success{color:#7bdbaa}.day2-warn{color:#ffb3a1}.day2-p95{font-weight:700;color:#acd6ff}
+.day2-info{font-size:10px;padding:3px 5px;background:#514326;color:#f2cb80;border-radius:4px;margin-left:5px}.day2-empty{text-align:center;color:#9eb2cd;padding:22px!important}
+.day2-chart-head{margin-top:30px}.day2-muted,.day2-footnote{color:#90a7c0;font-size:12px}
+.day2-legend{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0;font-size:12px;color:#c6d8ed}.day2-legend span{display:flex;align-items:center;gap:6px}.day2-legend i{width:12px;height:6px;border-radius:2px;display:inline-block}
+.day2-failure-legend i{background:#f47f8d!important;border-radius:50%;width:8px;height:8px}
+.day2-chart{border:1px solid #293e5b;background:#111a2b;border-radius:12px;overflow:hidden}.day2-chart svg{display:block;width:100%;height:auto;min-height:170px}
+.day2-grid-line{stroke:#364860;stroke-width:1;stroke-dasharray:3 4}.day2-tick{fill:#9aafca;font-size:11px}.day2-axis-label{fill:#9aafca;font-size:11px}.day2-chart-empty{text-align:center;padding:75px 18px;color:#9caec7;font-size:13px}
+.day2-footnote{line-height:1.7;margin:15px 0 0}
+@media(max-width:720px){.day2-page{padding:0 13px 30px}.day2-panel{padding:17px}.day2-kpis{grid-template-columns:1fr}.day2-kpi strong{font-size:21px}.day2-controls label{min-width:160px}.day2-topline h2{font-size:22px}}

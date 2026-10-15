@@ -1,0 +1,26 @@
+# Optional primary proxy for a NEW deployment.
+mixed-port: 7890
+allow-lan: false
+bind-address: 127.0.0.1
+external-controller: 127.0.0.1:19090
+secret: ""
+mode: rule
+log-level: warning
+ipv6: false
+tun:
+  enable: false
+dns:
+  enable: false
+proxy-providers:
+  upstream:
+    type: file
+    path: ./nodes.yaml
+    health-check:
+      enable: false
+proxy-groups:
+  - name: OUTBOUND
+    type: select
+    use:
+      - upstream
+rules:
+  - MATCH,OUTBOUND

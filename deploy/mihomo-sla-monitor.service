@@ -1,0 +1,23 @@
+[Unit]
+Description=Mihomo isolated SLA monitor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=mihomo-sla
+Group=mihomo-sla
+StateDirectory=mihomo-sla-monitor
+StateDirectoryMode=0700
+WorkingDirectory=/var/lib/mihomo-sla-monitor
+ExecStart=/usr/local/bin/mihomo -d /var/lib/mihomo-sla-monitor
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

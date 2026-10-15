@@ -1,0 +1,5 @@
+{
+  "probe_url": "https://www.gstatic.com/generate_204",
+  "interval_seconds": 60,
+  "timeout_ms": 5000
+}

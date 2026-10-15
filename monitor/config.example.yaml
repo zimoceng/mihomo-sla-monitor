@@ -1,0 +1,24 @@
+allow-lan: false
+bind-address: 127.0.0.1
+external-controller: 127.0.0.1:19091
+secret: ""
+mode: rule
+log-level: warning
+ipv6: false
+tun:
+  enable: false
+dns:
+  enable: false
+proxy-providers:
+  all-nodes:
+    type: file
+    path: ./nodes.yaml
+    health-check:
+      enable: false
+proxy-groups:
+  - name: MONITOR
+    type: select
+    use:
+      - all-nodes
+rules:
+  - MATCH,DIRECT

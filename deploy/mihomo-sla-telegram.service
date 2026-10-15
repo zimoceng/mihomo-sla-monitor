@@ -1,0 +1,26 @@
+[Unit]
+Description=Mihomo SLA Telegram incident notifications
+Wants=network-online.target
+Requires=mihomo-sla-backend.service
+After=network-online.target mihomo-sla-backend.service
+
+[Service]
+Type=simple
+User=mihomo-sla
+Group=mihomo-sla
+WorkingDirectory=/opt/mihomo-sla/backend
+StateDirectory=mihomo-sla-alerts
+StateDirectoryMode=0700
+Environment=PYTHONDONTWRITEBYTECODE=1
+EnvironmentFile=/etc/mihomo-sla/telegram.env
+ExecStart=/opt/mihomo-sla/backend/.venv/bin/python /opt/mihomo-sla/backend/telegram_worker.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

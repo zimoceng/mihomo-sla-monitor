@@ -1,0 +1,4 @@
+# Replace this local file with your own valid proxy nodes before real use.
+proxies:
+  - name: EXAMPLE-DIRECT
+    type: direct

@@ -1,0 +1,23 @@
+[Unit]
+Description=Optional primary Mihomo proxy for a NEW SLA deployment
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=mihomo-main
+Group=mihomo-main
+StateDirectory=mihomo-sla-main
+StateDirectoryMode=0700
+WorkingDirectory=/var/lib/mihomo-sla-main
+ExecStart=/usr/local/bin/mihomo -d /var/lib/mihomo-sla-main
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

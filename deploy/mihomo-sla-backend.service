@@ -1,0 +1,30 @@
+[Unit]
+Description=Mihomo SLA FastAPI backend
+Wants=network-online.target
+Requires=mihomo-sla-monitor.service
+After=network-online.target mihomo-sla-monitor.service
+
+[Service]
+Type=simple
+User=mihomo-sla
+Group=mihomo-sla
+WorkingDirectory=/opt/mihomo-sla/backend
+StateDirectory=mihomo-sla
+StateDirectoryMode=0700
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=SLA_DB=/var/lib/mihomo-sla/sla.db
+Environment=SLA_PROVIDER_FILE=/var/lib/mihomo-sla-monitor/nodes.yaml
+Environment=SLA_PROBE_SETTINGS_FILE=/var/lib/mihomo-sla/probe-settings.json
+EnvironmentFile=-/etc/mihomo-sla/backend.env
+ExecStart=/opt/mihomo-sla/backend/.venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1 --no-access-log
+ReadWritePaths=/var/lib/mihomo-sla-monitor
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

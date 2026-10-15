@@ -1,0 +1,33 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Mihomo SLA · Network Observatory</title></head><body>
+<div class="sla-shell">
+  <aside class="console-sidebar" aria-label="控制台导航">
+    <div class="console-logo"><span class="console-emblem" aria-hidden="true">◈</span><span><strong>Node Observatory</strong><small>Mihomo SLA · 控制台</small></span></div>
+    <nav class="console-nav" aria-label="页面导航">
+      <span class="console-nav-title">WORKSPACE</span>
+      <a href="#sla-overview" class="active"><span class="ico">▦</span>概览</a>
+      <a href="#sla-analytics"><span class="ico">⌁</span>线路分析</a>
+      <a href="#sla-incidents"><span class="ico">◷</span>故障事件</a>
+      <a href="#sla-coverage"><span class="ico">▥</span>监控覆盖率</a>
+      <a href="#sla-settings"><span class="ico">⚙</span>探测设置</a>
+    </nav>
+    <div class="console-side-foot">NETWORK OPERATIONS<br>Ubuntu · FastAPI · Mihomo<br>仅供可信网络管理</div>
+  </aside>
+  <div class="console-workspace">
+    <div class="console-topbar"><div class="console-crumb">Workspace / <strong>Mihomo SLA</strong></div>
+      <div class="console-top-right"><span id="console-runtime-details">正在连接监控服务…</span><span class="console-status" id="console-runtime-status">连接中</span></div>
+    </div>
+    <div class="console-contents">
+      <div class="console-page-title"><div><div class="caption">NETWORK OBSERVABILITY</div><h1>网络运行概览</h1><p>节点、可用性、故障与历史趋势 — 一个地方查看。</p></div></div>
+<section class="cf-section" id="sla-overview"><div id="app"></div></section><script type="module" src="/src/main.js"></script><section class="cf-section" id="sla-analytics"><div id="day2-app"></div></section>
+<script type="module" src="/src/day2-entry.js"></script>
+<section class="cf-section" id="sla-settings"><div id="day24-app"></div></section>
+<script type="module" src="/src/day24-entry.js"></script>
+<section class="cf-section" id="sla-incidents"><div id="day3-app"></div></section>
+<script type="module" src="/src/day3-entry.js"></script>
+<section class="cf-section" id="sla-coverage"><div id="day32-app"></div></section>
+<script type="module" src="/src/day32-entry.js"></script>
+    </div><!-- console-contents -->
+  </div><!-- console-workspace -->
+</div><!-- sla-shell -->
+<script type="module" src="/src/console-shell.js"></script>
+</body></html>
